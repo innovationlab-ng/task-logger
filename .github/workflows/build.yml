@@ -123,32 +123,28 @@ jobs:
           chmod +x "TaskLogger.app/Contents/MacOS/TaskLogger"
           cp installer/Info.plist "TaskLogger.app/Contents/Info.plist"
 
-      # Ad-hoc code signing.
-      # .NET bundles contain mixed content (.dll, .dylib, .json, .dat etc.).
-      # codesign --deep fails on anything it can't sign.
-      # The correct approach for .NET:
-      #   1. Strip debug/metadata files that have no place in a release build
-      #   2. Sign all native .dylib files (clears Microsoft Team ID)
-      #   3. Sign the main executable
-      #   4. Sign the bundle with --no-strict, which tells codesign not to require
-      #      every subcomponent to be individually signed — designed exactly for
-      #      runtimes like .NET that bundle non-code assets alongside binaries.
+      # Ad-hoc code signing for a .NET app bundle.
+      # .NET publishes a mix of .dylib, .dll, .json, .pdb, .dat files.
+      # Strategy:
+      #   1. Delete files codesign can never process (.pdb, .xml)
+      #   2. Sign every .dylib and .dll with || true so a single failure
+      #      doesn't abort — some reference assemblies can't be signed
+      #   3. Sign the main executable explicitly
+      #   4. Sign the bundle with --no-strict to tolerate any remaining
+      #      unsigned non-binary assets (.json, .dat etc.)
       - name: Ad-hoc sign .app bundle
         run: |
-          # Remove files that serve no purpose in a release and confuse codesign
           find "TaskLogger.app" -name "*.pdb" -delete
           find "TaskLogger.app" -name "*.xml" -delete
 
-          # Sign all native libraries (fixes Team ID mismatch at runtime)
-          find "TaskLogger.app" -name "*.dylib" | while read f; do
-            codesign --force --sign - "$f"
-          done
+          find "TaskLogger.app" \( -name "*.dylib" -o -name "*.dll" \) \
+            | while read f; do
+                codesign --force --sign - "$f" 2>/dev/null || true
+              done
 
-          # Sign the main executable
-          codesign --force --sign - "TaskLogger.app/Contents/MacOS/TaskLogger"
+          codesign --force --sign - \
+            "TaskLogger.app/Contents/MacOS/TaskLogger"
 
-          # Sign the bundle — --no-strict skips the requirement that every
-          # subcomponent (e.g. .dll, .json) is also individually signed
           codesign --force --sign - \
             --no-strict \
             --options runtime \
