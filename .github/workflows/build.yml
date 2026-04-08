@@ -8,6 +8,11 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# ── Opt into Node.js 24 now so actions/checkout, setup-dotnet and
+# upload-artifact run on the new runtime before GitHub forces the switch.
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
 
   # ════════════════════════════════════════════════════════════════════════════
