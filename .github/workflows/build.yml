@@ -83,18 +83,16 @@ jobs:
           dotnet-version: '10.0.x'
 
       # Publish Apple Silicon binary
-      # IncludeNativeLibrariesForSelfExtract=true bundles native .dylib files
-      # (libSkiaSharp, libAvalonia etc.) into the single file — they are
-      # extracted to a temp folder at first launch.
+      # NO PublishSingleFile — on macOS, native .dylib files (libSkiaSharp etc.)
+      # must sit alongside the binary inside Contents/MacOS/. Bundling them into
+      # a single file causes a crash because macOS security prevents extracting
+      # them to a temp directory at runtime.
       - name: Publish (macOS arm64)
         run: >
           dotnet publish TaskLoggerApp.csproj
           -c Release
           -r osx-arm64
           --self-contained true
-          -p:PublishSingleFile=true
-          -p:EnableCompressionInSingleFile=true
-          -p:IncludeNativeLibrariesForSelfExtract=true
           -o publish/osx-arm64
 
       # Publish Intel binary (for older Macs)
@@ -104,22 +102,24 @@ jobs:
           -c Release
           -r osx-x64
           --self-contained true
-          -p:PublishSingleFile=true
-          -p:EnableCompressionInSingleFile=true
-          -p:IncludeNativeLibrariesForSelfExtract=true
           -o publish/osx-x64
 
       # Build the .app bundle structure that macOS expects:
       #   TaskLogger.app/
       #     Contents/
-      #       Info.plist   ← app metadata (bundle ID, name, version)
+      #       Info.plist        ← app metadata (bundle ID, name, version)
       #       MacOS/
-      #         TaskLogger ← the actual binary
+      #         TaskLogger      ← the main executable (renamed from TaskLoggerApp)
+      #         libSkiaSharp.dylib  ← native libraries live here alongside binary
+      #         *.dll               ← managed assemblies
       - name: Build .app bundle (arm64)
         run: |
           mkdir -p "TaskLogger.app/Contents/MacOS"
           mkdir -p "TaskLogger.app/Contents/Resources"
-          cp publish/osx-arm64/TaskLoggerApp "TaskLogger.app/Contents/MacOS/TaskLogger"
+          # Copy ALL published files so native dylibs are beside the binary
+          cp -r publish/osx-arm64/. "TaskLogger.app/Contents/MacOS/"
+          # Rename the main binary to match CFBundleExecutable in Info.plist
+          mv "TaskLogger.app/Contents/MacOS/TaskLoggerApp" "TaskLogger.app/Contents/MacOS/TaskLogger"
           chmod +x "TaskLogger.app/Contents/MacOS/TaskLogger"
           cp installer/Info.plist "TaskLogger.app/Contents/Info.plist"
 
