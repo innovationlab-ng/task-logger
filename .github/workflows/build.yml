@@ -124,20 +124,23 @@ jobs:
           cp installer/Info.plist "TaskLogger.app/Contents/Info.plist"
 
       # Ad-hoc code signing.
-      # All binary files inside Contents/MacOS — both .dylib and .dll — must be
-      # individually signed before the bundle itself can be signed. Any unsigned
-      # component causes the final bundle signature to fail.
+      # All binary files inside Contents/MacOS must be individually signed before
+      # the bundle can be signed. .pdb files (Windows debug symbols) cannot be
+      # signed at all, so they must be removed first.
       - name: Ad-hoc sign all binaries and .app bundle
         run: |
-          # Step 1: sign every .dylib (clears Microsoft Team ID)
+          # Step 1: remove files that codesign cannot process
+          find "TaskLogger.app" -name "*.pdb" -delete
+          find "TaskLogger.app" -name "*.xml" -delete
+          # Step 2: sign every .dylib (clears Microsoft Team ID)
           find "TaskLogger.app" -name "*.dylib" | while read f; do
             codesign --force --sign - "$f"
           done
-          # Step 2: sign every .dll (managed assemblies must be signed too)
+          # Step 3: sign every .dll (managed assemblies must be signed too)
           find "TaskLogger.app" -name "*.dll" | while read f; do
             codesign --force --sign - "$f"
           done
-          # Step 3: sign the app bundle itself
+          # Step 4: sign the app bundle itself
           codesign --force --sign - \
             --options runtime \
             --entitlements installer/entitlements.plist \
