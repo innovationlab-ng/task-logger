@@ -124,19 +124,20 @@ jobs:
           cp installer/Info.plist "TaskLogger.app/Contents/Info.plist"
 
       # Ad-hoc code signing.
-      # IMPORTANT: --deep does NOT re-sign loose .dylib files in Contents/MacOS/.
-      # The .dylib files from Microsoft/.NET have their own Team ID baked in.
-      # If we only sign the bundle, macOS rejects it because the main binary
-      # (ad-hoc, no Team ID) and the dylibs (Microsoft Team ID) don't match.
-      # Fix: sign every .dylib individually first to overwrite their Team IDs,
-      # then sign the bundle itself — all signatures will have an empty Team ID.
-      - name: Ad-hoc sign all dylibs and .app bundle
+      # All binary files inside Contents/MacOS — both .dylib and .dll — must be
+      # individually signed before the bundle itself can be signed. Any unsigned
+      # component causes the final bundle signature to fail.
+      - name: Ad-hoc sign all binaries and .app bundle
         run: |
-          # Step 1: re-sign every dylib to clear Microsoft's Team ID
-          find "TaskLogger.app" -name "*.dylib" | while read lib; do
-            codesign --force --sign - "$lib"
+          # Step 1: sign every .dylib (clears Microsoft Team ID)
+          find "TaskLogger.app" -name "*.dylib" | while read f; do
+            codesign --force --sign - "$f"
           done
-          # Step 2: sign the app bundle itself
+          # Step 2: sign every .dll (managed assemblies must be signed too)
+          find "TaskLogger.app" -name "*.dll" | while read f; do
+            codesign --force --sign - "$f"
+          done
+          # Step 3: sign the app bundle itself
           codesign --force --sign - \
             --options runtime \
             --entitlements installer/entitlements.plist \
