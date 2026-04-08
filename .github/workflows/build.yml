@@ -123,33 +123,26 @@ jobs:
           chmod +x "TaskLogger.app/Contents/MacOS/TaskLogger"
           cp installer/Info.plist "TaskLogger.app/Contents/Info.plist"
 
-      # Ad-hoc code signing for a .NET app bundle.
-      # .NET publishes a mix of .dylib, .dll, .json, .pdb, .dat files.
-      # Strategy:
-      #   1. Delete files codesign can never process (.pdb, .xml)
-      #   2. Sign every .dylib and .dll with || true so a single failure
-      #      doesn't abort — some reference assemblies can't be signed
-      #   3. Sign the main executable explicitly
-      #   4. Sign the bundle with --no-strict to tolerate any remaining
-      #      unsigned non-binary assets (.json, .dat etc.)
+      # Ad-hoc code signing.
+      # --options runtime is intentionally omitted — that flag enables hardened
+      # runtime mode which enforces strict signing on every adjacent file
+      # (.deps.json, .runtimeconfig.json etc.) and causes the build to fail.
+      # It is only needed for Apple notarization, which requires a paid
+      # Developer account. Ad-hoc signing without it is sufficient to clear
+      # the Gatekeeper "damaged" error.
       - name: Ad-hoc sign .app bundle
         run: |
           find "TaskLogger.app" -name "*.pdb" -delete
           find "TaskLogger.app" -name "*.xml" -delete
 
-          find "TaskLogger.app" \( -name "*.dylib" -o -name "*.dll" \) \
-            | while read f; do
-                codesign --force --sign - "$f" 2>/dev/null || true
-              done
+          # Re-sign all dylibs to clear Microsoft's Team ID (fixes runtime crash)
+          find "TaskLogger.app" -name "*.dylib" | while read f; do
+            codesign --force --sign - "$f" 2>/dev/null || true
+          done
 
-          codesign --force --sign - \
-            "TaskLogger.app/Contents/MacOS/TaskLogger"
-
-          codesign --force --sign - \
-            --no-strict \
-            --options runtime \
-            --entitlements installer/entitlements.plist \
-            "TaskLogger.app"
+          # Sign the bundle — no --options runtime, no --entitlements
+          # --no-strict tolerates unsigned non-binary assets (.json, .dat etc.)
+          codesign --force --sign - --no-strict "TaskLogger.app"
 
       # create-dmg makes the drag-to-Applications installer window
       - name: Install create-dmg
