@@ -4,6 +4,7 @@
              x:Class="TaskLoggerApp.App"
              x:DataType="vm:AppViewModel"
              xmlns:local="using:TaskLoggerApp"
+             Name="TaskLogger"
              RequestedThemeVariant="Default">
              <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
 
