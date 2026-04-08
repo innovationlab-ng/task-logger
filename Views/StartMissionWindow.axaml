@@ -1,0 +1,76 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:TaskLoggerApp.ViewModels"
+        x:DataType="vm:StartMissionViewModel"
+        x:Class="TaskLoggerApp.Views.StartMissionWindow"
+        Title="Start Mission"
+        Width="420"
+        Height="440"
+        CanResize="False"
+        WindowStartupLocation="CenterScreen"
+        ShowInTaskbar="False">
+
+    <Grid RowDefinitions="Auto,*,Auto" Margin="28 24 28 24">
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0 0 0 16" Spacing="2">
+            <TextBlock Text="🏹 Start a Mission"
+                       FontSize="17" FontWeight="SemiBold"/>
+            <TextBlock Text="Define your focus block. Prompts will resume when it ends."
+                       Opacity="0.6" FontSize="12" TextWrapping="Wrap"/>
+        </StackPanel>
+
+        <!-- Form -->
+        <StackPanel Grid.Row="1" Spacing="6">
+
+            <TextBlock Text="Mission Name" FontWeight="SemiBold" FontSize="13"/>
+            <TextBox Text="{Binding MissionName}"
+                     Watermark="e.g. Audit Report Draft, Working papers for Q1…"
+                     MaxLength="120"/>
+
+            <TextBlock Text="Description (optional)" FontWeight="SemiBold" FontSize="13" Margin="0 8 0 0"/>
+            <TextBox Text="{Binding Description}"
+                     Watermark="What are you working on?"
+                     Height="60"
+                     AcceptsReturn="True"
+                     TextWrapping="Wrap"/>
+
+            <TextBlock Text="Duration" FontWeight="SemiBold" FontSize="13" Margin="0 8 0 0"/>
+            <Border Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
+                    CornerRadius="8" Padding="12 10">
+                <Grid ColumnDefinitions="*,16,*">
+                    <StackPanel Grid.Column="0" Spacing="4">
+                        <TextBlock Text="Hours" FontSize="12" Opacity="0.6"/>
+                        <NumericUpDown Value="{Binding DurationHours}"
+                                       Minimum="0" Maximum="23" Increment="1"
+                                       FormatString="00"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" Spacing="4">
+                        <TextBlock Text="Minutes" FontSize="12" Opacity="0.6"/>
+                        <NumericUpDown Value="{Binding DurationMinutes}"
+                                       Minimum="0" Maximum="59" Increment="15"
+                                       FormatString="00"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+        </StackPanel>
+
+        <!-- Buttons -->
+        <Grid Grid.Row="2" ColumnDefinitions="*,10,*" Margin="0 16 0 0">
+            <Button Grid.Column="0"
+                    Content="▶️ Start Mission"
+                    Classes="accent"
+                    Command="{Binding StartCommand}"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center"/>
+            <Button Grid.Column="2"
+                    Content="Cancel"
+                    Command="{Binding CancelCommand}"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center"/>
+        </Grid>
+
+    </Grid>
+
+</Window>

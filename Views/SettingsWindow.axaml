@@ -1,0 +1,182 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:TaskLoggerApp.ViewModels"
+        xmlns:models="using:TaskLoggerApp.Models"
+        x:Class="TaskLoggerApp.Views.SettingsWindow"
+        x:DataType="vm:SettingsViewModel"
+        Title="TaskLogger - Settings"
+        Width="460" Height="560"
+        CanResize="False"
+        WindowStartupLocation="CenterScreen"
+        Icon="/Assets/avalonia-logo.ico">
+
+    <Grid RowDefinitions="Auto,*,Auto" Margin="24 20 24 20">
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0 0 0 12">
+            <TextBlock Text="Settings"
+                       FontSize="20" FontWeight="SemiBold"
+                       HorizontalAlignment="Center"/>
+            <TextBlock Text="Adjust your work schedule and preferences."
+                       HorizontalAlignment="Center"
+                       TextAlignment="Center"
+                       TextWrapping="Wrap"
+                       Opacity="0.6"
+                       Margin="0 2 0 0"/>
+        </StackPanel>
+
+        <!-- Tabs -->
+        <TabControl Grid.Row="1">
+
+            <!-- Schedule tab -->
+            <TabItem Header="Schedule">
+                <StackPanel Spacing="8" Margin="0 14 0 0">
+
+                    <TextBlock Text="Work Start" FontWeight="SemiBold"/>
+                    <TimePicker SelectedTime="{Binding WorkStartTime}"
+                                ClockIdentifier="24HourClock"
+                                HorizontalAlignment="Stretch"/>
+
+                    <TextBlock Text="Work End" FontWeight="SemiBold" Margin="0 6 0 0"/>
+                    <TimePicker SelectedTime="{Binding WorkEndTime}"
+                                ClockIdentifier="24HourClock"
+                                HorizontalAlignment="Stretch"/>
+
+                    <TextBlock Text="Prompt Interval (minutes)"
+                               FontWeight="SemiBold"
+                               Margin="0 6 0 0"/>
+                    <NumericUpDown Value="{Binding IntervalMinutes}"
+                                   Minimum="1" Maximum="480" Increment="15"
+                                   FormatString="0"
+                                   HorizontalAlignment="Stretch"/>
+
+                    <TextBlock Text="Log Retention (weeks, max 5)"
+                               FontWeight="SemiBold"
+                               Margin="0 6 0 0"/>
+                    <NumericUpDown Value="{Binding RetentionWeeks}"
+                                   Minimum="1" Maximum="5" Increment="1"
+                                   FormatString="0"
+                                   HorizontalAlignment="Stretch"/>
+
+                </StackPanel>
+            </TabItem>
+
+            <!-- Export tab -->
+            <TabItem Header="Export">
+                <StackPanel Spacing="8" Margin="0 14 0 0">
+
+                    <TextBlock Text="Reports are saved under the active profile's folder."
+                               Opacity="0.6"
+                               TextWrapping="Wrap"/>
+
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <TextBlock Text="Active:" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding ActiveProfileName}" VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <Border BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                            BorderThickness="1" CornerRadius="4" Height="150"
+                            Margin="0 4 0 0">
+                        <ListBox ItemsSource="{Binding Profiles}"
+                                 SelectedItem="{Binding SelectedProfile}"
+                                 Padding="4">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate x:DataType="models:ExportProfile">
+                                    <StackPanel Margin="2 2">
+                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold"/>
+                                        <TextBlock FontSize="11" Opacity="0.6">
+                                            <TextBlock.IsVisible>
+                                                <Binding Path="ExportFolder"
+                                                         Converter="{x:Static StringConverters.IsNotNullOrEmpty}"/>
+                                            </TextBlock.IsVisible>
+                                            <Run Text="{Binding ExportFolder}"/>
+                                        </TextBlock>
+                                        <TextBlock Text="(internal default)" FontSize="11" Opacity="0.45">
+                                            <TextBlock.IsVisible>
+                                                <Binding Path="ExportFolder"
+                                                         Converter="{x:Static StringConverters.IsNullOrEmpty}"/>
+                                            </TextBlock.IsVisible>
+                                        </TextBlock>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </Border>
+
+                    <Grid ColumnDefinitions="*,6,*,6,*,6,*">
+                        <Button Grid.Column="0" Content="Pick Folder"
+                                Command="{Binding PickFolderCommand}"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Center"/>
+                        <Button Grid.Column="2" Content="Set Active"
+                                Command="{Binding SetActiveProfileCommand}"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Center"/>
+                        <Button Grid.Column="4" Content="Add"
+                                Command="{Binding AddProfileCommand}"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Center"/>
+                        <Button Grid.Column="6" Content="Remove"
+                                Command="{Binding RemoveProfileCommand}"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Center"/>
+                    </Grid>
+
+                </StackPanel>
+            </TabItem>
+
+            <!-- Behaviour tab -->
+            <TabItem Header="Behaviour">
+                <StackPanel Spacing="12" Margin="0 16 0 0">
+
+                    <TextBlock Text="Prompt mode" FontWeight="SemiBold"/>
+                    <RadioButton GroupName="PromptMode"
+                                 Content="Task mode - log tasks at regular intervals"
+                                 IsChecked="{Binding IsTaskMode}"/>
+                    <RadioButton GroupName="PromptMode"
+                                 Content="Mission mode - suppress prompts while a mission is active"
+                                 IsChecked="{Binding IsMissionMode}"/>
+
+                    <Separator Margin="0 4"/>
+
+                    <CheckBox Content="Enable automatic popup prompts"
+                              IsChecked="{Binding PopupsEnabled}"/>
+
+                    <CheckBox Content="Show floating icon overlay (always on top)"
+                              IsChecked="{Binding FloatingIconEnabled}"/>
+
+                    <CheckBox Content="Auto-pause during screen sharing (Zoom, Teams)"
+                              IsChecked="{Binding AutoDetectScreenSharing}"/>
+
+                    <CheckBox Content="Launch TaskLogger at login"
+                              IsChecked="{Binding LaunchAtLogin}"/>
+
+                </StackPanel>
+            </TabItem>
+
+        </TabControl>
+
+        <!-- Validation + Save - always visible below all tabs -->
+        <StackPanel Grid.Row="2">
+            <Border Background="#22FF0000"
+                    CornerRadius="4"
+                    Padding="10 6"
+                    Margin="0 8 0 0"
+                    IsVisible="{Binding ValidationError,
+                                Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                <TextBlock Text="{Binding ValidationError}"
+                           Foreground="Red"
+                           TextWrapping="Wrap"/>
+            </Border>
+
+            <Button Content="Save"
+                    Classes="accent"
+                    Command="{Binding SaveCommand}"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center"
+                    Margin="0 12 0 0"/>
+        </StackPanel>
+
+    </Grid>
+
+</Window>

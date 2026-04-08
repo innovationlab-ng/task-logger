@@ -1,0 +1,64 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:TaskLoggerApp.ViewModels"
+        x:DataType="vm:FloatingIconViewModel"
+        x:Class="TaskLoggerApp.Views.FloatingIconWindow"
+        Title=""
+        Width="90"
+        Height="36"
+        SystemDecorations="None"
+        Background="Transparent"
+        TransparencyLevelHint="Transparent"
+        Topmost="True"
+        ShowInTaskbar="False"
+        CanResize="False"
+        WindowStartupLocation="Manual">
+
+    <!--
+        Pill-shaped overlay.
+        Left side  = drag grip  (click + drag anywhere on the ⠿ area to reposition)
+        Right side = Log button (click to open the task-prompt window)
+    -->
+    <Border Background="#DD1E2A3A"
+            CornerRadius="18"
+            ClipToBounds="True">
+        <Grid ColumnDefinitions="30,*">
+
+            <!-- ── Drag grip ────────────────────────────────────────────── -->
+            <Border Grid.Column="0"
+                    Cursor="SizeAll"
+                    PointerPressed="OnDragPressed"
+                    Background="Transparent"
+                    ToolTip.Tip="Drag to move">
+                <TextBlock Text="⠿"
+                           FontSize="14"
+                           Foreground="#889AB0"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"/>
+            </Border>
+
+            <!-- ── Log button ───────────────────────────────────────────── -->
+            <Button Grid.Column="1"
+                    Command="{Binding ShowPromptCommand}"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Padding="2 0 8 0"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    HorizontalContentAlignment="Left"
+                    VerticalContentAlignment="Center"
+                    ToolTip.Tip="Log a task">
+                <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                    <TextBlock Text="📋" FontSize="13" VerticalAlignment="Center"/>
+                    <TextBlock Text="Log"
+                               FontSize="12"
+                               FontWeight="Medium"
+                               Foreground="#D0E4F7"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+            </Button>
+
+        </Grid>
+    </Border>
+
+</Window>

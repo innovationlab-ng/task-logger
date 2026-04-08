@@ -1,0 +1,97 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:TaskLoggerApp.ViewModels"
+        x:Class="TaskLoggerApp.Views.PromptWindow"
+        x:DataType="vm:PromptViewModel"
+        Title="Log a Task"
+        Width="420" Height="460"
+        CanResize="False"
+        WindowStartupLocation="CenterScreen"
+        Icon="/Assets/avalonia-logo.ico">
+
+    <Grid RowDefinitions="Auto,*,Auto" Margin="32 24 32 24">
+
+        <!-- ── Header ──────────────────────────────────────────────────────── -->
+        <StackPanel Grid.Row="0" Spacing="4" Margin="0 0 0 16">
+            <Image Source="/Assets/avalonia-logo.ico"
+                   Width="48" Height="48"
+                   HorizontalAlignment="Center"/>
+            <TextBlock Text="What have you been working on?"
+                       FontSize="16" FontWeight="SemiBold"
+                       HorizontalAlignment="Center"
+                       TextAlignment="Center"/>
+        </StackPanel>
+
+        <!-- ── Form ────────────────────────────────────────────────────────── -->
+        <StackPanel Grid.Row="1" Spacing="8">
+
+            <!-- Task -->
+            <TextBlock Text="Task" FontWeight="SemiBold"/>
+            <TextBox Text="{Binding Task}"
+                     Watermark="e.g. Audit Report Draft, Working papers for Q1…"
+                     MaxLength="200"/>
+
+            <!-- Description -->
+            <TextBlock Text="Description (optional)" FontWeight="SemiBold" Margin="0 6 0 0"/>
+            <TextBox Text="{Binding Description}"
+                     Watermark="Additional notes…"
+                     AcceptsReturn="True"
+                     TextWrapping="Wrap"
+                     Height="100"
+                     VerticalAlignment="Stretch"/>
+
+            <!-- Saved feedback -->
+            <TextBlock Text="{Binding SavedMessage}"
+                       Foreground="Green"
+                       FontWeight="SemiBold"
+                       HorizontalAlignment="Center"
+                       IsVisible="{Binding SavedMessage,
+                                   Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                       Margin="0 4 0 0"/>
+
+            <!-- Planned duration (mission prompts only) -->
+            <StackPanel Orientation="Horizontal"
+                        IsVisible="{Binding IsMissionPrompt}"
+                        Margin="0 6 0 0"
+                        Spacing="4">
+                <TextBlock Text="Planned duration:" Opacity="0.7"/>
+                <TextBlock Text="{Binding DurationMinutes}" FontWeight="SemiBold"/>
+                <TextBlock Text="min" Opacity="0.7"/>
+            </StackPanel>
+
+            <!-- Countdown banner (mission prompt — while auto-save is pending) -->
+            <TextBlock Text="{Binding CountdownText}"
+                       IsVisible="{Binding IsCountingDown}"
+                       Foreground="Orange"
+                       FontWeight="SemiBold"
+                       HorizontalAlignment="Center"
+                       Margin="0 6 0 0"/>
+
+        </StackPanel>
+
+        <!-- ── Buttons ──────────────────────────────────────────────────────── -->
+        <Grid Grid.Row="2" ColumnDefinitions="*,8,*" Margin="0 16 0 0">
+            <Button Grid.Column="0"
+                    Content="Save"
+                    Command="{Binding SaveCommand}"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center"/>
+            <!-- Close: visible when not counting down -->
+            <Button Grid.Column="2"
+                    Content="Close"
+                    Command="{Binding CloseCommand}"
+                    IsVisible="{Binding IsNotCountingDown}"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center"/>
+            <!-- Edit: visible while countdown is active -->
+            <Button Grid.Column="2"
+                    Content="&#x270F;&#x2002;Edit"
+                    Command="{Binding EditCommand}"
+                    IsVisible="{Binding IsCountingDown}"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center"/>
+        </Grid>
+
+    </Grid>
+
+</Window>

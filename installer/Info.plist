@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+
+    <!-- The binary filename inside Contents/MacOS/ -->
+    <key>CFBundleExecutable</key>
+    <string>TaskLogger</string>
+
+    <!-- Unique reverse-DNS identifier — must match your LaunchAgent plist -->
+    <key>CFBundleIdentifier</key>
+    <string>com.tasklogger.app</string>
+
+    <!-- Short internal name (no spaces) -->
+    <key>CFBundleName</key>
+    <string>TaskLogger</string>
+
+    <!-- Display name shown in Finder and Activity Monitor -->
+    <key>CFBundleDisplayName</key>
+    <string>TaskLogger</string>
+
+    <!-- Build number (bump with each release) -->
+    <key>CFBundleVersion</key>
+    <string>1.0.0</string>
+
+    <!-- User-visible version shown in Finder Get Info -->
+    <key>CFBundleShortVersionString</key>
+    <string>1.0.0</string>
+
+    <!-- Marks this as an Application bundle -->
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+
+    <!-- Enable Retina / HiDPI rendering -->
+    <key>NSHighResolutionCapable</key>
+    <true/>
+
+    <!-- LSUIElement = true means:
+         • No Dock icon
+         • No app switcher entry
+         • Tray-only — this is exactly what we want for a background task logger -->
+    <key>LSUIElement</key>
+    <true/>
+
+</dict>
+</plist>

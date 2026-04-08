@@ -1,0 +1,136 @@
+name: Build & Package
+
+# ── When this runs ────────────────────────────────────────────────────────────
+# • Automatically on every push to the main branch
+# • Manually from the GitHub Actions tab (workflow_dispatch)
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+
+  # ════════════════════════════════════════════════════════════════════════════
+  # JOB 1 — Windows installer (.exe)
+  # Runs on a real Windows Server VM hosted by GitHub (free)
+  # ════════════════════════════════════════════════════════════════════════════
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+
+      # 1. Download your source code onto the VM
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      # 2. Install the correct .NET version
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      # 3. Compile and publish a single self-contained Windows binary
+      #    --self-contained  : bundles the .NET runtime — no install needed on target PC
+      #    PublishSingleFile  : merges everything into one .exe
+      - name: Publish (Windows x64)
+        run: >
+          dotnet publish TaskLoggerApp.csproj
+          -c Release
+          -r win-x64
+          --self-contained true
+          -p:PublishSingleFile=true
+          -p:EnableCompressionInSingleFile=true
+          -o publish/win
+
+      # 4. Run Inno Setup (pre-installed on all GitHub Windows runners)
+      #    This reads installer/TaskLogger.iss and produces the setup wizard .exe
+      - name: Build Windows installer (Inno Setup)
+        run: >
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+          installer\TaskLogger.iss
+
+      # 5. Upload the finished installer so you can download it from GitHub
+      - name: Upload Windows installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: TaskLogger-Windows-Setup
+          path: installer/Output/TaskLoggerSetup.exe
+          retention-days: 30
+
+  # ════════════════════════════════════════════════════════════════════════════
+  # JOB 2 — macOS DMG installer
+  # Runs on a real macOS (Apple Silicon) VM hosted by GitHub (free)
+  # ════════════════════════════════════════════════════════════════════════════
+  build-macos:
+    runs-on: macos-latest   # Apple Silicon (M-series) runner
+
+    steps:
+
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      # Publish Apple Silicon binary
+      - name: Publish (macOS arm64)
+        run: >
+          dotnet publish TaskLoggerApp.csproj
+          -c Release
+          -r osx-arm64
+          --self-contained true
+          -p:PublishSingleFile=true
+          -p:EnableCompressionInSingleFile=true
+          -o publish/osx-arm64
+
+      # Publish Intel binary (for older Macs)
+      - name: Publish (macOS x64)
+        run: >
+          dotnet publish TaskLoggerApp.csproj
+          -c Release
+          -r osx-x64
+          --self-contained true
+          -p:PublishSingleFile=true
+          -p:EnableCompressionInSingleFile=true
+          -o publish/osx-x64
+
+      # Build the .app bundle structure that macOS expects:
+      #   TaskLogger.app/
+      #     Contents/
+      #       Info.plist   ← app metadata (bundle ID, name, version)
+      #       MacOS/
+      #         TaskLogger ← the actual binary
+      - name: Build .app bundle (arm64)
+        run: |
+          mkdir -p "TaskLogger.app/Contents/MacOS"
+          mkdir -p "TaskLogger.app/Contents/Resources"
+          cp publish/osx-arm64/TaskLoggerApp "TaskLogger.app/Contents/MacOS/TaskLogger"
+          chmod +x "TaskLogger.app/Contents/MacOS/TaskLogger"
+          cp installer/Info.plist "TaskLogger.app/Contents/Info.plist"
+
+      # create-dmg makes the drag-to-Applications installer window
+      - name: Install create-dmg
+        run: brew install create-dmg
+
+      - name: Create DMG
+        run: |
+          mkdir -p dist
+          cp -r TaskLogger.app dist/
+          create-dmg \
+            --volname "TaskLogger" \
+            --window-size 540 380 \
+            --icon-size 128 \
+            --icon "TaskLogger.app" 150 185 \
+            --hide-extension "TaskLogger.app" \
+            --app-drop-link 390 185 \
+            "TaskLogger-macOS.dmg" \
+            "dist/"
+
+      - name: Upload macOS DMG
+        uses: actions/upload-artifact@v4
+        with:
+          name: TaskLogger-macOS
+          path: TaskLogger-macOS.dmg
+          retention-days: 30

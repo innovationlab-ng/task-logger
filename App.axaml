@@ -1,0 +1,42 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:TaskLoggerApp.ViewModels"
+             x:Class="TaskLoggerApp.App"
+             x:DataType="vm:AppViewModel"
+             xmlns:local="using:TaskLoggerApp"
+             RequestedThemeVariant="Default">
+             <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+
+    <Application.DataTemplates>
+        <local:ViewLocator/>
+    </Application.DataTemplates>
+
+    <Application.Styles>
+        <FluentTheme />
+    </Application.Styles>
+
+    <TrayIcon.Icons>
+        <TrayIcons>
+            <TrayIcon ToolTipText="TaskLogger"
+                      Icon="/Assets/avalonia-logo.ico">
+                <TrayIcon.Menu>
+                    <NativeMenu>
+                        <NativeMenuItem Header="Log a Task"       Command="{Binding ShowPromptCommand}" />
+                        <NativeMenuItemSeparator />
+                        <NativeMenuItem Header="{Binding PauseMenuLabel}" Command="{Binding TogglePauseCommand}" />
+                        <NativeMenuItemSeparator />
+                        <NativeMenuItem Header="▶  Start Mission" Command="{Binding StartMissionCommand}" />
+                        <NativeMenuItem Header="⏹  End Mission"   Command="{Binding EndMissionCommand}"
+                                        IsEnabled="{Binding IsMissionActive}" />
+                        <NativeMenuItemSeparator />
+                        <NativeMenuItem Header="Settings"         Command="{Binding OpenSettingsCommand}" />
+                        <NativeMenuItem Header="Reports"          Command="{Binding OpenReportsCommand}" />
+                        <NativeMenuItemSeparator />
+                        <NativeMenuItem Header="Quit"             Command="{Binding QuitCommand}" />
+                    </NativeMenu>
+                </TrayIcon.Menu>
+            </TrayIcon>
+        </TrayIcons>
+    </TrayIcon.Icons>
+
+</Application>

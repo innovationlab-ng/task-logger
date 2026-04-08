@@ -1,0 +1,51 @@
+is_global = true
+build_property.AvaloniaNameGeneratorIsEnabled = true
+build_property.AvaloniaNameGeneratorBehavior = InitializeComponent
+build_property.AvaloniaNameGeneratorDefaultFieldModifier = internal
+build_property.AvaloniaNameGeneratorFilterByPath = *
+build_property.AvaloniaNameGeneratorFilterByNamespace = *
+build_property.AvaloniaNameGeneratorViewFileNamingStrategy = NamespaceAndClassName
+build_property.AvaloniaNameGeneratorAttachDevTools = true
+build_property.TargetFramework = net10.0
+build_property.TargetFrameworkIdentifier = .NETCoreApp
+build_property.TargetFrameworkVersion = v10.0
+build_property.TargetPlatformMinVersion = 
+build_property.UsingMicrosoftNETSdkWeb = 
+build_property.ProjectTypeGuids = 
+build_property.InvariantGlobalization = 
+build_property.PlatformNeutralAssembly = 
+build_property.EnforceExtendedAnalyzerRules = 
+build_property._SupportedPlatformList = Linux,macOS,Windows
+build_property.RootNamespace = TaskLoggerApp
+build_property.ProjectDir = /Users/olaoluwa.idowu/Documents/innovation/projects/task-logger/TaskLoggerApp/
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = 
+build_property.EffectiveAnalysisLevelStyle = 10.0
+build_property.EnableCodeStyleSeverity = 
+
+[/Users/olaoluwa.idowu/Documents/innovation/projects/task-logger/TaskLoggerApp/App.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/Users/olaoluwa.idowu/Documents/innovation/projects/task-logger/TaskLoggerApp/Views/FloatingIconWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/Users/olaoluwa.idowu/Documents/innovation/projects/task-logger/TaskLoggerApp/Views/FridayReportDialog.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/Users/olaoluwa.idowu/Documents/innovation/projects/task-logger/TaskLoggerApp/Views/MainWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/Users/olaoluwa.idowu/Documents/innovation/projects/task-logger/TaskLoggerApp/Views/PromptWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/Users/olaoluwa.idowu/Documents/innovation/projects/task-logger/TaskLoggerApp/Views/ReportsWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/Users/olaoluwa.idowu/Documents/innovation/projects/task-logger/TaskLoggerApp/Views/SettingsWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/Users/olaoluwa.idowu/Documents/innovation/projects/task-logger/TaskLoggerApp/Views/SetupWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[/Users/olaoluwa.idowu/Documents/innovation/projects/task-logger/TaskLoggerApp/Views/StartMissionWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml

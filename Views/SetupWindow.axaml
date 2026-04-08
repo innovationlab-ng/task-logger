@@ -1,0 +1,86 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:TaskLoggerApp.ViewModels"
+        x:Class="TaskLoggerApp.Views.SetupWindow"
+        x:DataType="vm:SetupViewModel"
+        Title="TaskLogger – First-run Setup"
+        Width="440" Height="560"
+        CanResize="False"
+        WindowStartupLocation="CenterScreen"
+        Icon="/Assets/avalonia-logo.ico">
+
+    <ScrollViewer Padding="36 28 36 28">
+        <StackPanel Spacing="6">
+
+            <!-- ── Header ──────────────────────────────────────────────── -->
+            <Image Source="/Assets/avalonia-logo.ico"
+                   Width="64" Height="64"
+                   HorizontalAlignment="Center"
+                   Margin="0 0 0 6"/>
+
+            <TextBlock Text="Welcome to TaskLogger"
+                       FontSize="20" FontWeight="SemiBold"
+                       HorizontalAlignment="Center"/>
+
+            <TextBlock Text="Configure your work schedule to get started."
+                       HorizontalAlignment="Center"
+                       TextAlignment="Center"
+                       TextWrapping="Wrap"
+                       Opacity="0.6"
+                       Margin="0 2 0 12"/>
+
+            <Separator Margin="0 4 0 12"/>
+
+            <!-- ── Work Start ───────────────────────────────────────────── -->
+            <TextBlock Text="Work Start" FontWeight="SemiBold"/>
+            <TimePicker SelectedTime="{Binding WorkStartTime}"
+                        ClockIdentifier="24HourClock"
+                        HorizontalAlignment="Stretch"/>
+
+            <!-- ── Work End ─────────────────────────────────────────────── -->
+            <TextBlock Text="Work End" FontWeight="SemiBold" Margin="0 10 0 0"/>
+            <TimePicker SelectedTime="{Binding WorkEndTime}"
+                        ClockIdentifier="24HourClock"
+                        HorizontalAlignment="Stretch"/>
+
+            <!-- ── Prompt Interval ──────────────────────────────────────── -->
+            <TextBlock Text="Prompt Interval (minutes)"
+                       FontWeight="SemiBold"
+                       Margin="0 10 0 0"/>
+            <NumericUpDown Value="{Binding IntervalMinutes}"
+                           Minimum="1" Maximum="480" Increment="15"
+                           FormatString="0"
+                           HorizontalAlignment="Stretch"/>
+
+            <!-- ── Retention Weeks ──────────────────────────────────────── -->
+            <TextBlock Text="Log Retention (weeks, max 5)"
+                       FontWeight="SemiBold"
+                       Margin="0 10 0 0"/>
+            <NumericUpDown Value="{Binding RetentionWeeks}"
+                           Minimum="1" Maximum="5" Increment="1"
+                           FormatString="0"
+                           HorizontalAlignment="Stretch"/>
+
+            <!-- ── Validation error ─────────────────────────────────────── -->
+            <Border Background="#22FF0000"
+                    CornerRadius="4"
+                    Padding="10 6"
+                    Margin="0 10 0 0"
+                    IsVisible="{Binding ValidationError,
+                                Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                <TextBlock Text="{Binding ValidationError}"
+                           Foreground="Red"
+                           TextWrapping="Wrap"/>
+            </Border>
+
+            <!-- ── Save ────────────────────────────────────────────────── -->
+            <Button Content="Save &amp; Start"
+                    Command="{Binding SaveCommand}"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center"
+                    Margin="0 16 0 0"/>
+
+        </StackPanel>
+    </ScrollViewer>
+
+</Window>
