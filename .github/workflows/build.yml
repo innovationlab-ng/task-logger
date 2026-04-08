@@ -125,19 +125,31 @@ jobs:
 
       - name: Ad-hoc sign .app bundle
         run: |
-          # Remove files that cannot be signed at all
-          find "TaskLogger.app" -name "*.pdb" -delete
-          find "TaskLogger.app" -name "*.xml" -delete
+          # Delete files that codesign cannot sign and are not needed at runtime:
+          #   .pdb  — Windows debug symbols (no use on macOS)
+          #   .xml  — IntelliSense docs (only needed in an IDE)
+          #   .deps.json — dependency manifest (only needed by dotnet CLI tooling)
+          #   .runtimeconfig.json — only needed for framework-dependent apps;
+          #                         self-contained apps embed this info in the binary
+          find "TaskLogger.app" \( \
+            -name "*.pdb" -o \
+            -name "*.xml" -o \
+            -name "*.deps.json" -o \
+            -name "*.runtimeconfig.json" \
+          \) -delete
 
-          # Sign every .dylib and .dll individually first.
-          # || true prevents the loop aborting on any file that refuses signing.
-          find "TaskLogger.app" \( -name "*.dylib" -o -name "*.dll" \) \
-            -print0 | xargs -0 -I{} sh -c 'codesign --force --sign - "{}" 2>/dev/null || true'
+          # Re-sign all native .dylib files to clear Microsoft's Team ID.
+          # Without this the app crashes at launch with "Team ID mismatch".
+          find "TaskLogger.app" -name "*.dylib" \
+            -print0 | xargs -0 -I{} codesign --force --sign - "{}"
 
-          # Sign the bundle last.
-          # --no-strict: tolerates remaining unsigned assets (.json, .dat, .runtimeconfig etc.)
-          # No --options runtime: that flag enforces hardened runtime which
-          # requires every adjacent file to be signed — incompatible with .NET bundles.
+          # Sign every .dll. Some reference-only assemblies may fail — || true
+          # skips those. The bundle signing below handles the rest.
+          find "TaskLogger.app" -name "*.dll" \
+            -print0 | xargs -0 -I{} sh -c 'codesign --force --sign - "$1" 2>/dev/null || true' _ {}
+
+          # Sign the bundle. --no-strict tells codesign not to require every
+          # non-binary asset (.json etc.) to be individually signed.
           codesign --force --sign - --no-strict "TaskLogger.app"
 
       # create-dmg makes the drag-to-Applications installer window
