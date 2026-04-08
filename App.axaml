@@ -18,7 +18,7 @@
     <TrayIcon.Icons>
         <TrayIcons>
             <TrayIcon ToolTipText="TaskLogger"
-                      Icon="/Assets/avalonia-logo.ico">
+                      Icon="/Assets/tray-icon.ico">
                 <TrayIcon.Menu>
                     <NativeMenu>
                         <NativeMenuItem Header="Log a Task"       Command="{Binding ShowPromptCommand}" />
