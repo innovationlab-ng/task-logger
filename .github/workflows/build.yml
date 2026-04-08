@@ -35,8 +35,10 @@ jobs:
           dotnet-version: '10.0.x'
 
       # 3. Compile and publish a single self-contained Windows binary
-      #    --self-contained  : bundles the .NET runtime — no install needed on target PC
-      #    PublishSingleFile  : merges everything into one .exe
+      #    --self-contained                   : bundles the .NET runtime — no install needed on target PC
+      #    PublishSingleFile                  : merges everything into one .exe
+      #    IncludeNativeLibrariesForSelfExtract: bundles native DLLs (libSkiaSharp etc.)
+      #                                         so the app doesn't crash on first launch
       - name: Publish (Windows x64)
         run: >
           dotnet publish TaskLoggerApp.csproj
@@ -45,6 +47,7 @@ jobs:
           --self-contained true
           -p:PublishSingleFile=true
           -p:EnableCompressionInSingleFile=true
+          -p:IncludeNativeLibrariesForSelfExtract=true
           -o publish/win
 
       # 4. Run Inno Setup (pre-installed on all GitHub Windows runners)
