@@ -5,6 +5,13 @@
     <Nullable>enable</Nullable>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <!-- App identity shown in title bars, About dialogs and system process lists -->
+    <AssemblyTitle>TaskLogger</AssemblyTitle>
+    <Product>TaskLogger</Product>
+    <Company>TaskLogger</Company>
+    <!-- Windows taskbar / exe icon — generated from installer/icon.svg in CI.
+         Condition prevents a build error when the .ico doesn't exist locally. -->
+    <ApplicationIcon Condition="Exists('installer\icon.ico')">installer\icon.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>

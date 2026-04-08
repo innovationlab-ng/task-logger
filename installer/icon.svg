@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1B3A6B"/>
+      <stop offset="100%" style="stop-color:#0D1F3C"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Rounded background -->
+  <rect width="1024" height="1024" rx="200" ry="200" fill="url(#bg)"/>
+
+  <!-- Green accent stripe at top -->
+  <rect x="0" y="0" width="1024" height="12" rx="0" fill="#4CAF50" opacity="0.9"/>
+  <rect x="0" y="0" width="1024" height="12" rx="200" fill="#4CAF50" opacity="0.9"/>
+
+  <!-- T letter -->
+  <rect x="140" y="280" width="340" height="80" rx="20" fill="white"/>
+  <rect x="275" y="280" width="80" height="380" rx="20" fill="white"/>
+
+  <!-- L letter -->
+  <rect x="540" y="280" width="80" height="380" rx="20" fill="white"/>
+  <rect x="540" y="580" width="280" height="80" rx="20" fill="white"/>
+
+  <!-- Green dot accent -->
+  <circle cx="512" cy="820" r="28" fill="#4CAF50"/>
+</svg>

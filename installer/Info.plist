@@ -4,6 +4,11 @@
 <plist version="1.0">
 <dict>
 
+    <!-- Icon file (without extension) — macOS looks for AppIcon.icns
+         in Contents/Resources/, which the CI build copies there -->
+    <key>CFBundleIconFile</key>
+    <string>AppIcon</string>
+
     <!-- The binary filename inside Contents/MacOS/ -->
     <key>CFBundleExecutable</key>
     <string>TaskLogger</string>

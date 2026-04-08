@@ -34,7 +34,16 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
-      # 3. Compile and publish a single self-contained Windows binary
+      # 3. Generate .ico from the SVG icon using ImageMagick (pre-installed on windows-latest).
+      #    The .csproj references installer\icon.ico as ApplicationIcon so this must
+      #    run BEFORE dotnet publish.
+      - name: Generate Windows icon (.ico)
+        run: |
+          magick installer/icon.svg `
+            -define icon:auto-resize=256,128,64,48,32,16 `
+            installer/icon.ico
+
+      # 4. Compile and publish a single self-contained Windows binary
       #    --self-contained                   : bundles the .NET runtime — no install needed on target PC
       #    PublishSingleFile                  : merges everything into one .exe
       #    IncludeNativeLibrariesForSelfExtract: bundles native DLLs (libSkiaSharp etc.)
@@ -82,6 +91,22 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
+      # Generate .icns from the SVG icon.
+      # librsvg provides rsvg-convert to render SVG → PNG at exact pixel sizes.
+      # iconutil (built into macOS) assembles the .iconset folder into a .icns file.
+      - name: Generate macOS icon (.icns)
+        run: |
+          brew install librsvg
+          mkdir -p AppIcon.iconset
+          for size in 16 32 64 128 256 512; do
+            rsvg-convert -w $size -h $size installer/icon.svg \
+              > AppIcon.iconset/icon_${size}x${size}.png
+            double=$((size * 2))
+            rsvg-convert -w $double -h $double installer/icon.svg \
+              > AppIcon.iconset/icon_${size}x${size}@2x.png
+          done
+          iconutil -c icns AppIcon.iconset -o installer/AppIcon.icns
+
       # Publish Apple Silicon binary
       # NO PublishSingleFile — on macOS, native .dylib files (libSkiaSharp etc.)
       # must sit alongside the binary inside Contents/MacOS/. Bundling them into
@@ -122,6 +147,8 @@ jobs:
           mv "TaskLogger.app/Contents/MacOS/TaskLoggerApp" "TaskLogger.app/Contents/MacOS/TaskLogger"
           chmod +x "TaskLogger.app/Contents/MacOS/TaskLogger"
           cp installer/Info.plist "TaskLogger.app/Contents/Info.plist"
+          # Copy the icon — macOS reads it from Contents/Resources/
+          cp installer/AppIcon.icns "TaskLogger.app/Contents/Resources/AppIcon.icns"
 
       - name: Ad-hoc sign .app bundle
         run: |
