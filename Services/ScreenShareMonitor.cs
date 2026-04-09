@@ -26,7 +26,7 @@ namespace TaskLoggerApp.Services;
 /// </summary>
 public sealed class ScreenShareMonitor : IDisposable
 {
-    private const int PollIntervalMs = 8_000; // check every 8 seconds
+    private const int PollIntervalMs = 30_000; // check every 30 seconds — Process.GetProcesses() is expensive
 
     private readonly AppViewModel _vm;
     private readonly Timer        _timer;
@@ -67,31 +67,26 @@ public sealed class ScreenShareMonitor : IDisposable
 
     private static bool IsScreenSharingActive()
     {
+        // Process objects hold native OS handles and MUST be disposed after use.
+        // Failing to do so causes a native handle leak of ~300 objects every 8 seconds,
+        // which accumulates into high RAM usage and occasional UI freezes.
+        Process[]? processes = null;
         try
         {
-            var processes = Process.GetProcesses();
+            processes = Process.GetProcesses();
 
-            // Zoom: "CptHost" is the screen-share capture helper — only present during active share.
-            if (processes.Any(p => p.ProcessName.Equals("CptHost", StringComparison.OrdinalIgnoreCase)))
-                return true;
+            bool zoom = processes.Any(p =>
+                p.ProcessName.Equals("CptHost", StringComparison.OrdinalIgnoreCase));
+            if (zoom) return true;
 
-            // macOS generic: "screencapturekit" daemon becomes active when any SCStream is running.
-            if (processes.Any(p => p.ProcessName.Contains("screencapturekit", StringComparison.OrdinalIgnoreCase)))
-                return true;
+            bool screenKit = processes.Any(p =>
+                p.ProcessName.Contains("screencapturekit", StringComparison.OrdinalIgnoreCase));
+            if (screenKit) return true;
 
-            // Teams (classic and new): helper renderer spawned during screen share.
-            // The new Teams app uses "MSTeams" as the main process name on macOS.
-            if (processes.Any(p =>
-                    p.ProcessName.Contains("MSTeams", StringComparison.OrdinalIgnoreCase) ||
-                    p.ProcessName.Contains("Teams Helper", StringComparison.OrdinalIgnoreCase)))
-            {
-                // Teams runs even when not sharing; try to narrow it down by
-                // checking for a "screensharing" or "renderer" helper sub-process.
-                if (processes.Any(p =>
-                        p.ProcessName.Contains("Teams Helper (Renderer)", StringComparison.OrdinalIgnoreCase) ||
-                        p.ProcessName.Contains("MSTeams Helper", StringComparison.OrdinalIgnoreCase)))
-                    return true;
-            }
+            bool teamsSharing = processes.Any(p =>
+                p.ProcessName.Contains("Teams Helper (Renderer)", StringComparison.OrdinalIgnoreCase) ||
+                p.ProcessName.Contains("MSTeams Helper", StringComparison.OrdinalIgnoreCase));
+            if (teamsSharing) return true;
 
             return false;
         }
@@ -99,6 +94,13 @@ public sealed class ScreenShareMonitor : IDisposable
         {
             // Process enumeration can fail with permission errors — safe to ignore.
             return false;
+        }
+        finally
+        {
+            // Always dispose every Process object to release native handles.
+            if (processes is not null)
+                foreach (var p in processes)
+                    p.Dispose();
         }
     }
 

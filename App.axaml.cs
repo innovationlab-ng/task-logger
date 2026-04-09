@@ -84,6 +84,7 @@ public partial class App : Application
                 }
                 var promptVm = new PromptViewModel(vm.LogService);
                 promptWindow = new PromptWindow(promptVm);
+                promptWindow.Closed += (_, _) => promptWindow = null;
                 promptWindow.Show();
             }
 
