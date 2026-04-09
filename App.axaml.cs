@@ -6,6 +6,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using System;
 using System.Linq;
+using System.Runtime;
 using System.Threading;
 using TaskLoggerApp.Models;
 using TaskLoggerApp.Services;
@@ -84,7 +85,7 @@ public partial class App : Application
                 }
                 var promptVm = new PromptViewModel(vm.LogService);
                 promptWindow = new PromptWindow(promptVm);
-                promptWindow.Closed += (_, _) => promptWindow = null;
+                promptWindow.Closed += (_, _) => { promptWindow = null; TrimMemory(); };
                 promptWindow.Show();
             }
 
@@ -141,6 +142,7 @@ public partial class App : Application
                 {
                     floatingIcon?.Close();
                     floatingIcon = null;
+                    TrimMemory();
                 }
             }
 
@@ -293,9 +295,33 @@ public partial class App : Application
                 scheduler.Start(); // Settings already exist; begin scheduling now.
                 UpdateFloatingIcon();  // Show overlay if it was enabled in saved settings.
             }
+
+            // ── Periodic idle memory trim ─────────────────────────────────────────
+            // Every 5 minutes, force a full compacting GC to return freed memory
+            // to the OS. The .NET GC by default keeps freed heap pages reserved;
+            // this ensures steady-state RAM stays low for a background tray app.
+            var idleTrimTimer = new System.Threading.Timer(
+                _ => TrimMemory(),
+                null,
+                TimeSpan.FromMinutes(5),
+                TimeSpan.FromMinutes(5));
+
+            desktop.ShutdownRequested += (_, _) => idleTrimTimer.Dispose();
         }
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    /// <summary>
+    /// Forces a full compacting GC cycle to return freed heap memory to the OS.
+    /// Call this after closing windows or during idle periods.
+    /// </summary>
+    private static void TrimMemory()
+    {
+        GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
+        GC.Collect(GC.MaxGeneration, GCCollectionMode.Aggressive, blocking: true, compacting: true);
+        GC.WaitForPendingFinalizers();
+        GC.Collect(GC.MaxGeneration, GCCollectionMode.Aggressive, blocking: true, compacting: true);
     }
 
     private void DisableAvaloniaDataAnnotationValidation()
