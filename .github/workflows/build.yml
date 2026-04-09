@@ -129,25 +129,40 @@ jobs:
           --self-contained true
           -o publish/osx-x64
 
-      # Build the .app bundle structure that macOS expects:
-      #   TaskLogger.app/
-      #     Contents/
-      #       Info.plist        ← app metadata (bundle ID, name, version)
-      #       MacOS/
-      #         TaskLogger      ← the main executable (renamed from TaskLoggerApp)
-      #         libSkiaSharp.dylib  ← native libraries live here alongside binary
-      #         *.dll               ← managed assemblies
-      - name: Build .app bundle (arm64)
+      # Build a universal .app bundle that runs on BOTH Apple Silicon AND Intel Macs.
+      # Strategy:
+      #   1. Copy all files from the arm64 publish (dlls, dylibs, configs)
+      #   2. Use `lipo` to merge the two architecture-specific binaries and dylibs
+      #      into single "fat" universal binaries
+      #   3. The result runs natively on both architectures
+      - name: Build universal .app bundle
         run: |
           mkdir -p "TaskLogger.app/Contents/MacOS"
           mkdir -p "TaskLogger.app/Contents/Resources"
-          # Copy ALL published files so native dylibs are beside the binary
+
+          # Start with arm64 as the base (all managed .dll files are arch-neutral)
           cp -r publish/osx-arm64/. "TaskLogger.app/Contents/MacOS/"
-          # Rename the main binary to match CFBundleExecutable in Info.plist
-          mv "TaskLogger.app/Contents/MacOS/TaskLoggerApp" "TaskLogger.app/Contents/MacOS/TaskLogger"
+
+          # Merge the main executable into a universal binary
+          lipo -create \
+            publish/osx-arm64/TaskLoggerApp \
+            publish/osx-x64/TaskLoggerApp \
+            -output "TaskLogger.app/Contents/MacOS/TaskLogger"
+          # Remove the arm64-only copy that was copied from the base
+          rm -f "TaskLogger.app/Contents/MacOS/TaskLoggerApp"
           chmod +x "TaskLogger.app/Contents/MacOS/TaskLogger"
+
+          # Merge each native .dylib into a universal dylib
+          for lib in publish/osx-arm64/*.dylib; do
+            name=$(basename "$lib")
+            x64="publish/osx-x64/$name"
+            dest="TaskLogger.app/Contents/MacOS/$name"
+            if [ -f "$x64" ]; then
+              lipo -create "$lib" "$x64" -output "$dest"
+            fi
+          done
+
           cp installer/Info.plist "TaskLogger.app/Contents/Info.plist"
-          # Copy the icon — macOS reads it from Contents/Resources/
           cp installer/AppIcon.icns "TaskLogger.app/Contents/Resources/AppIcon.icns"
 
       - name: Ad-hoc sign .app bundle
